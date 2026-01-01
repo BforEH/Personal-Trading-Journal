@@ -22,18 +22,14 @@ from flask_wtf.csrf import CSRFProtect, CSRFError
 from wtforms import StringField, PasswordField, SubmitField
 from wtforms.validators import DataRequired, Email, Length
 
-
 from PIL import Image
 import io
 import time
-
 
 import calendar
 import logging
 from logging.handlers import RotatingFileHandler
 import json
-
-
 
 app = Flask(__name__)
 csrf = CSRFProtect(app)
@@ -43,7 +39,6 @@ handler.setLevel(logging.DEBUG)  # Capture everything
 handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'))
 app.logger.addHandler(handler)
 app.logger.setLevel(logging.DEBUG)  # Set Flask to debug level
-
 
 logging.basicConfig(handlers=[handler], level=logging.DEBUG)
 
@@ -80,8 +75,6 @@ os.makedirs(KNOWLEDGE_UPLOAD_FOLDER, exist_ok=True)
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'mp4', 'webm', 'ogg'}
 app.config["MAX_CONTENT_LENGTH"] = 1024*1024*1024
 app.config['PERMANENT_SESSION_LIFETIME'] = 14400
-
-
 
 limiter = Limiter(get_remote_address, app=app, default_limits=["200 per day", "50 per hour"])
 @limiter.limit("5 per minute") 
@@ -135,7 +128,6 @@ def login_required(f):
     return decorated_function
 
 
-
 def migrate_gallery_table():
     conn = sqlite3.connect(DATABASE)
     conn.row_factory = sqlite3.Row  
@@ -172,9 +164,7 @@ def init_db():
     conn = sqlite3.connect(DATABASE)
     cursor = conn.cursor()
     migrate_gallery_table()
-    
- 
-
+   
 
     cursor.execute('''CREATE TABLE IF NOT EXISTS trades (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
