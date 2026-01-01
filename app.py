@@ -1,5 +1,5 @@
-# STS Trading Journal - Built by a legend in 2025
-# Lightning fast, faster than these other tradesystems
+# STS Trading Journal 
+# Lightning fast, faster than most other tradesystems
 
 from flask import Flask, render_template, request, redirect, url_for, flash, session, send_file, jsonify, g
 import sqlite3
