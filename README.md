@@ -11,7 +11,7 @@ Designed for traders who want to keep a structured, private, and detailed record
 - Built-in knowledge base (articles, PDFs, videos)
 - Image gallery with multi-image posts
 - Sticky notes (pinned, colored) and simple todo/ticker lists
-- Secure login, CSRF protection, rate limiting, bcrypt password hashing
+- Secure login, CSRF protection, rate limiting, bcrypt password hashing (This application is created to run locally and has partial protection for the internet, if you want to open it to the internet consider adding more security) (No https at the moment)
 - Could be run locally or on your NAS — your data never leaves your machine
 
 ### Quick Start
