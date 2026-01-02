@@ -1,0 +1,333 @@
+{% extends "base.html" %}
+
+{% block title %}Trades - STS{% endblock %}
+
+
+{% block content %}
+    <h1>Trades</h1>
+    <hr class="title-divider">
+  
+    
+    <div class="top-bar">
+        
+    <form method="get" action="{{ url_for('index') }}" class="search-filter-form">
+        <select name="date_filter" id="date_filter" onchange="this.form.submit()">
+        <option value="last30" {% if request.args.get('date_filter', 'last30') == 'last30' %}selected{% endif %}>Last 30</option>
+        <option value="today" {% if request.args.get('date_filter', 'last30') == 'today' %}selected{% endif %}>Today</option>
+        <option value="week" {% if request.args.get('date_filter', 'last30') == 'week' %}selected{% endif %}>This Week</option>
+        <option value="month" {% if request.args.get('date_filter', 'last30') == 'month' %}selected{% endif %}>This Month</option>
+        <option value="year" {% if request.args.get('date_filter', 'last30') == 'year' %}selected{% endif %}>This Year</option>
+        <option value="all" {% if request.args.get('date_filter', 'last30') == 'all' %}selected{% endif %}>All Time</option>
+        </select>
+        <div class="search-bar">
+            <input class="input-search" type="text" name="search" id="search-input" placeholder="Search trades by symbol, status, sort, or any field..." value="{{ request.args.get('search', '') }}" onkeyup="if(event.keyCode===13) this.form.submit();">
+            <i class="fas fa-search search-icon"></i>
+        </div>
+
+    
+    <div class="monthly-rr-badge">
+        <span class="label">Monthly R:R</span>
+        <span class="value" style="color:{% if monthly_rr >= 0 %}#38CB89{% else %}#FD6E4E{% endif %};">
+            {{ "%.2f"|format(monthly_rr) }}
+        </span>
+    </div>
+    
+    
+    </form>
+    </div>
+ 
+    <div class="table-section">
+        {% if trades %}
+            <table id="trades-table" class="table table-striped display responsive nowrap" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Ticker</th>
+                        <th>Open Time</th>
+                        <th>Close Time</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                        <th>Sort</th>
+                        <th>Open Price</th>
+                        <th>Close Price</th>
+                        <th>Risk</th>
+                        <th>Stop-Loss</th>
+                        <th>Take-Profit</th>
+                        <th>RR</th>
+                        <th>Actions</th>
+                   
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr id="add-row" style="display:none;">
+                        <form action="{{ url_for('add_trade') }}" method="post" id="add-form">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <td>New</td>
+                            <td data-label="ID"><input name="symbol" required style="text-transform:uppercase;"></td>
+                            <td data-label="Open Time"><input type="datetime-local" name="open_time"  pattern="\d{4}-\d{2}-\d{2} \d{2}:\d{2}" placeholder="YYY-MM-DD HH:MM" required></td>
+                            <td data-label="Close Time"><input type="datetime-local" name="close_time" pattern="\d{4}-\d{2}-\d{2} \d{2}:\d{2}" placeholder="YYY-MM-DD HH:MM"></td>
+                            <td data-label="Type">
+                                <select name="type" required>
+                                    <option value="HTF">HTF</option>
+                                    <option value="MTF">MTF</option>
+                                    <option value="LTF">LTF</option>
+                                </select>
+                            </td>
+                            <td data-label="Status"><select name="status" required><option value="OPEN">OPEN</option><option value="CLOSED">CLOSED</option></td>
+                            <td data-label="Sort"><select name="sort" required><option value="LONG">LONG</option><option value="SHORT">SHORT</option></td>
+                            <td data-label="Open Price"><input name="open_price" type="number" step="any" required></td>
+                            <td data-label="Close Price"><input name="close_price" type="number" step="any"></td>
+                            <td data-label="Risk"><input name="risk" type="number" step="any" required></td>
+                            <td data-label="Stop-Loss"><input name="SL" type="number" step="any"></td>
+                            <td data-label="Take-Profit"><input name="TP" type="number" step="any"></td>
+                            <td>Auto</td>                                             
+                            <td><button type="submit" class="save-btn">Save</button>
+                                <button type="button" class="cancel-btn" onclick="hideAddRow()">Cancel</button></td>
+                        </form>
+                    </tr>
+                    {% for user in trades %}
+                        {% if not user.parent_id %}
+                        
+                    <tr class="{% if user.RR is not none %}{% if user.RR >= 1 %}winner{% elif user.RR < 0 %}loser{% else %}breakeven{% endif %}{% endif %}"
+                        id="row-{{ user.id }}"
+                        onclick="if (!this.classList.contains('editing')) window.location='{{ url_for('user_detail', user_id=user.id) }}';"
+                        style="cursor:pointer;">
+                        <td data-label="ID" style="text-align: center;">{{ user.id }}</td>
+                        <td data-label="Ticker" class="editable" data-field="symbol" data-value="{{ user.symbol }}">{{ user.symbol }}</td>
+                        <td data-label="Open Time" class="editable" data-field="open_time">
+                            {% if user.open_time %}
+                                {% if ' ' in user.open_time %}
+                                    {{ user.open_time.split(' ')[0] }}<br>
+                                    <span style="font-size: 0.7em; color: #888;">
+                                        {{ user.open_time.split(' ')[1] }}
+                                    </span>
+                                {% elif 'T' in user.open_time %}
+                                    {{ user.open_time.split('T')[0] }}<br>
+                                    <span style="font-size: 0.7em; color: #888;">
+                                        {{ user.open_time.split('T')[1] }}
+                                    </span>
+                                {% else %}
+                                    {{ user.open_time }}
+                                {% endif %}
+                            {% endif %}
+                        </td>
+                        <td data-label="Close Time" class="editable" data-field="close_time">
+                            {% if user.close_time %}
+                                {% if ' ' in user.close_time %}
+                                    {{ user.close_time.split(' ')[0] }}<br>
+                                    <span style="font-size: 0.7em; color: #888;">
+                                        {{ user.close_time.split(' ')[1] }}
+                                    </span>
+                                {% elif 'T' in user.close_time %}
+                                    {{ user.close_time.split('T')[0] }}<br>
+                                    <span style="font-size: 0.7em; color: #888;">
+                                        {{ user.close_time.split('T')[1] }}
+                                    </span>
+                                {% else %}
+                                    {{ user.close_time }}
+                                {% endif %}
+                            {% endif %}
+                        </td>
+                        <td data-label="Type" class="editable" data-field="type">{{ user.type }}</td>
+                        <td data-label="Status" class="editable" data-field="status">{{ user.status }}</td>
+                        <td data-label="Sort">
+                            <span class="direction-pill {{ 'long' if user.sort == 'LONG' else 'short' }}">
+                                {{ user.sort }}
+                            </span>
+                        </td>                        
+                        <td data-label="Open Price" class="editable" data-field="open_price" data-value="{{ user.open_price|default('') }}">{% if user.open_price is not none %}${{ user.open_price|smart_price }}{% endif %}</td>
+                        <td data-label="Close Price" class="editable" data-field="close_price" data-value="{{ user.close_price|default('') }}">{% if user.close_price is not none %}${{ user.close_price|smart_price }}{% endif %}</td>
+                        <td data-label="Risk" class = 'editable' data-field="risk" data-value="{{ user.risk|default('') }}">{{ user.risk|smart_price }}</td>
+                        <td data-label="Stop-Loss" class="editable" data-field="SL" data-value="{{ user.SL|default('') }}">{% if user.SL is not none %}${{ user.SL|smart_price }}{% endif %}</td>
+                        <td data-label="Take-Profit" class="editable" data-field="TP" data-value="{{ user.TP|default('') }}">{% if user.TP is not none %}${{ user.TP|smart_price }}{% endif %}</td>
+                        <td data-label="RR" class = {% if user.RR is not none %} {{ 'positive_R' if user.RR >=0 else 'negative_R' }} {% endif %}>{{ "%.2f"|format(user.RR) if user.RR is not none else "" }}</td>
+                        
+                        
+                        <td data-label="Action" class="action-cell" onclick="event.stopPropagation();" style="white-space:nowrap;">
+                        <div class="action-btns">
+                            <button class="edit-btn" title="Edit" onclick="event.stopPropagation(); editRow({{ user.id }})">
+                            <i class="fa fa-edit"></i>
+                            </button>
+                            <form action="{{ url_for('delete_trade', user_id=user.id) }}" method="post" style="display:inline;">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">  <!-- CSRF token here -->
+                            <button class="delete-btn" title="Delete" type="submit" onclick="event.stopPropagation(); return confirm('Delete this trade?');">
+                                <i class="fa fa-trash"></i>
+                            </button>
+                            </form>
+                            {% if user.status == 'OPEN' %}
+                            <button class="partial-btn" title="Add Partial Close" onclick="event.stopPropagation(); togglePartialForm({{ user.id }})">➕</button>
+                            {% endif %}
+                        </div>
+                        </td>
+                    </tr>
+
+                    <tr id="partial-form-row-{{ user.id }}" class="partial-form-row" style="display:none; background:#f8f9fa;">
+                    <form method="post" action="{{ url_for('partial_close_inline', parent_id=user.id) }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <td>↳ {{ user.id }}.new</td>
+                        <td>{{ user.symbol }}</td>
+                        <td>
+                            <input type="datetime-local" name="open_time" id="open_time_{{ user.id }}" style="display:none;">
+                        </td>
+                        <td>
+                            <input type="datetime-local" name="close_time" id="close_time_{{ user.id }}">
+                        </td>
+                        <td>{{ user.type }}</td>
+                        <td>
+                            <select id="partial-status-{{ user.id }}" name="status" onchange="togglePartialPriceTimeInputs({{ user.id }})">
+                                <option value="CLOSED" selected>CLOSED</option>
+                                <option value="OPEN">OPEN</option>
+                            </select>
+                        </td>
+                        <td>{{ user.sort }}</td>
+                        <td>
+                            <input type="number" step="any" name="open_price" id="open_price_{{ user.id }}" style="display:none;">
+                        </td>
+                        <td>
+                            <input type="number" step="any" name="close_price" id="close_price_{{ user.id }}" required>
+                        </td>
+                        <td>
+                            <input name="risk" type="number" step="any" required>
+                        </td>
+                        <td>{{ user.SL|smart_price }}</td>
+                        <td>{{ user.TP|smart_price }}</td>
+                        <td></td>
+                        <td>
+                            <input type="text" name="reason" placeholder="Reason" style="width:120px;">
+                        </td>
+                        <td>
+                            <button type="submit" class="save-btn">Add</button>
+                            <button type="button" onclick="hidePartialForm({{ user.id }})" class="cancel-btn">Cancel</button>
+                        </td>
+                    </form>
+                </tr>
+                    {% set partials = partials_by_parent.get(user.id|int, []) %}
+                        {% for partial in partials %}
+                       <tr id="row-{{ partial.id }}" class="partial-close-row" onclick="if(!this.classList.contains('editing')) window.location='{{ url_for('user_detail', user_id=partial.id) }}';">
+                            <td data-label="ID" style="padding-left: 2em;">↳ {{ user.id }}.{{ loop.index }}</td>
+                            <td data-label="Symbol" data-field="symbol">{{ partial.symbol }}</td>
+                            <td data-label="Open Time" class="editable" data-field="open_time">
+                            {% if partial.open_time %}
+                                {{ partial.open_time.split('T')[0] }}<br>
+                                <span style="font-size: 0.7em; color: #888;">{{ partial.open_time.split('T')[1] }}</span>
+                            {% endif %}
+                            </td>
+                            <td data-label="Close Time" class="editable" data-field="close_time">
+                                {% if partial.close_time %}
+                                {{ partial.close_time.split('T')[0] }}<br>
+                                <span style="font-size: 0.7em; color: #888;">{{ partial.close_time.split('T')[1] }}</span>
+                                </td>
+                            {% endif %}
+                            <td data-label="Type" class="editable" data-field="type">{{ partial.type }}</td>
+                            <td data-label="Status" class='editable' data-field="status">{{ partial.status }}</td>
+                            <td data-label="Sort" data-field="sort"></td>
+                            <td data-label="Open Price" class="editable" data-field="open_price" data-value="{{ partial.open_price|default('') }}">{% if partial.open_price is not none %}${{ partial.open_price|smart_price }}{% endif %}</td>
+                            <td data-label="Close Price" class="editable" data-field="close_price" data-value="{{ partial.close_price|default('') }}">{% if partial.close_price is not none %}${{ partial.close_price|smart_price }}{% endif %}</td>
+                            <td data-label="Risk" class = 'editable' data-field="risk" data-value="{{ partial.risk|default('') }}">{{ partial.risk|smart_price }}</td>
+                            <td data-label="Stop-Loss" class="editable" data-field="SL" data-value="{{ partial.SL|default('') }}">{% if partial.SL is not none %}${{ partial.SL|smart_price }}{% endif %}</td>
+                            <td data-label="Take-Profit" class="editable" data-field="TP" data-value="{{ partial.TP|default('') }}">{% if partial.TP is not none %}${{ partial.TP|smart_price }}{% endif %}</td>
+                            <td></td>
+                            <td class="action-cell">
+                            <div class="action-btns">
+                                <button class="edit-btn" title="Edit" onclick="event.stopPropagation(); editRow({{ partial.id }})">
+                                <i class="fa fa-edit"></i>
+                                </button>
+                                <form action="{{ url_for('delete_trade', user_id=partial.id) }}" method="post" style="display:inline;">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button class="delete-btn" title="Delete" type="submit" onclick="event.stopPropagation(); return confirm('Delete this trade?');">
+                                    <i class="fa fa-trash"></i>
+                                </button>
+                                </form>
+                            </div>
+                            </td>
+                        </tr>
+                            {% endfor %}
+                        {% endif %}
+                    {% endfor %}
+
+                    {% set orphaned_partials = [] %}
+                    {% for trade in trades %}
+                        {% if trade.parent_id %}
+                            {% set parent_exists = false %}
+                            {% for parent in trades %}
+                                {% if not parent.parent_id and parent.id == trade.parent_id %}
+                                    {% set parent_exists = true %}
+                                {% endif %}
+                            {% endfor %}
+                            {% if not parent_exists %}
+                                {% set _ = orphaned_partials.append(trade) %}
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if orphaned_partials %}
+                        <tr style="background:#fff3cd;">
+                            <td colspan="15" style="text-align:center; font-weight:bold; padding:10px;">
+                                ⚠️ Orphaned Partial Trades (Missing Parent Records)
+                            </td>
+                        </tr>
+                        {% for partial in orphaned_partials %}
+                        <tr class="partial-close-row orphaned" style="background:#fff3cd;" onclick="if(!this.classList.contains('editing')) window.location='{{ url_for('user_detail', user_id=partial.id) }}';">
+                            <td style="color: orange;">⚠️ {{ partial.id }}</td>
+                            <td>{{ partial.symbol }}</td>
+                            <td class="editable" data-field="open_time">
+                                {% if partial.open_time %}
+                                    {{ partial.open_time.split('T')[0] }}<br>
+                                    <span style="font-size: 0.7em; color: #888;">{{ partial.open_time.split('T')[1] }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="editable" data-field="close_time">
+                                {% if partial.close_time %}
+                                    {{ partial.close_time.split('T')[0] }}<br>
+                                    <span style="font-size: 0.7em; color: #888;">{{ partial.close_time.split('T')[1] }}</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ partial.status }}</td>
+                            <td>{{ partial.sort }}</td>
+                            <td data-value="{{ partial.open_price|default('') }}">{% if partial.open_price is not none %}${{ partial.open_price|smart_price }}{% endif %}</td>
+                            <td data-value="{{ partial.close_price|default('') }}">{% if partial.close_price is not none %}${{ partial.close_price|smart_price }}{% endif %}</td>
+                            <td>{{ partial.risk|smart_price }}</td>
+                            <td data-value="{{ partial.SL|default('') }}">{% if partial.SL is not none %}${{ partial.SL|smart_price }}{% endif %}</td>
+                            <td data-value="{{ partial.TP|default('') }}">{% if partial.TP is not none %}${{ partial.TP|smart_price }}{% endif %}</td>
+                            <td>{{ "%.2f"|format(partial.RR) if partial.RR is not none else "" }}</td>
+                            <td style="color: orange; font-size: 0.8em;">Missing Parent: {{ partial.parent_id }}</td>
+                        </tr>
+                        {% endfor %}
+                    {% endif %}
+                </tbody>
+            </table>
+            
+            {% else %}
+            <div class="empty-state">
+                <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity:0.4;">
+                    <circle cx="60" cy="60" r="50" stroke="currentColor" stroke-width="3" stroke-dasharray="8 8"/>
+                    <path d="M40 60L55 75L80 45" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <h3>No trades yet</h3>
+                <p>Start building your edge — click the green button to add your first trade!</p>
+            </div>
+            {% endif %}
+
+            
+        </div>
+
+    
+
+
+{% endblock %}
+{% block floating_button %}
+<button id="show-add-row" class="add-btn fab" title="Add Trade">+Add Trade</button>
+{% endblock %}
+{% block extra_scripts %}
+
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css">
+
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+
+    <script defer src="{{ url_for('static', filename='edit.js') }}"></script>
+
+   
+{% endblock %}
