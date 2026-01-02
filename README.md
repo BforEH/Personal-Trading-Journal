@@ -3,6 +3,8 @@ A clean, fast, self-hosted trading journal built with Flask.
 
 Designed for traders who want to keep a structured, private, and detailed record of their trades, thoughts, and progress — without subscriptions or third-party cloud services.
 <img width="1919" height="912" alt="Screenshot 2026-01-02 155417" src="https://github.com/user-attachments/assets/8dde95c7-8efe-4daf-9e9b-1610a513785c" />
+Journalling per trade
+<img width="1918" height="912" alt="image" src="https://github.com/user-attachments/assets/bac4d1a4-b93f-4025-b457-07c21ddb50a9" />
 
 
 - Full trade logging with support for partial closes and parent/child trade relationships
