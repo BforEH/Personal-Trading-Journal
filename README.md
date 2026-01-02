@@ -35,13 +35,13 @@ Password: 12345678
 ### Why I built this
 I wanted a journal that:
 
-Stays 100% private and offline
-Doesn't provide PnL, think purely in RR
-Feels instant even with thousands of trades
-Works in the way I want it in my style
-Handles partial closes correctly
-Looks clean and works reliably
-Doesn't have a lot of features that just distract
+- Stays 100% private and offline
+- Doesn't provide PnL, think purely in RR
+- Feels instant even with thousands of trades
+- Works in the way I want it in my style
+- Handles partial closes correctly
+- Looks clean and works reliably
+- Doesn't have a lot of features that just distract
 
 ### Contributing
 Pull requests and suggestions are very welcome.
