@@ -209,43 +209,111 @@
 {% endblock %}
 
 {% block extra_scripts %}
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
-    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css">
-    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
-    <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
-    <script defer src="{{ url_for('static', filename='edit.js') }}"></script>
+<!-- DataTables CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css">
 
-    <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const addRow = document.getElementById('add-row');
-        const fab    = document.getElementById('show-add-row');
+<!-- DataTables JS -->
+<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+<script defer src="{{ url_for('static', filename='edit.js') }}"></script>
 
-        window.showAddRow = function () {
-            addRow.style.display = 'table-row';
-            addRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            setTimeout(() => addRow.querySelector('input[name="symbol"]')?.focus(), 100);
-            fab.style.display = 'none';
-        };
+<script>
+$(document).ready(function() {
+    setTimeout(function() {
+        $('#trades-table').DataTable({
+            responsive: true,
+            pageLength: 50,
+            lengthMenu: [[25, 50, 100, -1], [25, 50, 100, "All"]],
+            order: [[2, 'desc']],
+            columnDefs: [{ orderable: false, targets: [13] }, { orderable: false, targets: [0] }],
+            dom: 'lfrtip',
+            language: { search: "", searchPlaceholder: "Quick search..." },
+            selector: { rows: 'tbody tr:not(#add-row):not(.partial-form-row):not(.editing)', cells: 'td:not(.action-cell)' }
+        });
+    }, 100);
+});
+</script>
 
-        window.hideAddRow = function () {
-            addRow.style.display = 'none';
-            fab.style.display = 'flex';
-        };
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const body = document.body;
+    const themeToggles = document.querySelectorAll('.theme-toggle-btn');
+    const themeForm = document.getElementById('theme-toggle-form');
+    let isDark = body.classList.contains('dark-theme');
 
-        fab.addEventListener('click', e => {
+    function updateThemeIcons() {
+        document.querySelectorAll('.theme-icon').forEach(icon => {
+            icon.textContent = isDark ? '☀️' : '🌙';
+        });
+    }
+
+    themeToggles.forEach((btn, index) => {
+        const newBtn = btn.cloneNode(true);
+        btn.parentNode.replaceChild(newBtn, btn);
+        
+        newBtn.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
-            showAddRow();
-        });
-
-        document.addEventListener('keydown', e => {
-            if (e.key === '+' && !e.ctrlKey && !e.shiftKey && !e.altKey &&
-                !['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)) {
-                e.preventDefault();
-                fab.click();
-            }
-        });
+            e.stopImmediatePropagation();
+            
+            body.classList.toggle('dark-theme');
+            isDark = body.classList.contains('dark-theme');
+            updateThemeIcons();
+            
+            setTimeout(() => themeForm.submit(), 50);
+        }, true);
     });
-    </script>
+
+    updateThemeIcons();
+});
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const addRow = document.getElementById('add-row');
+    const fab = document.getElementById('show-add-row');
+
+    window.showAddRow = function () {
+        addRow.style.display = 'table-row';
+        addRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setTimeout(() => addRow.querySelector('input[name="symbol"]')?.focus(), 100);
+        fab.style.display = 'none';
+    };
+
+    window.hideAddRow = function () {
+        addRow.style.display = 'none';
+        fab.style.display = 'flex';
+    };
+
+    const newFab = fab.cloneNode(true);
+    fab.parentNode.replaceChild(newFab, fab);
+    
+    newFab.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        console.log('FAB clicked!');
+        showAddRow();
+    }, true);
+
+    document.addEventListener('keydown', e => {
+        if (e.key === '+' && !e.ctrlKey && !e.shiftKey && !e.altKey &&
+            !['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)) {
+            e.preventDefault();
+            e.stopPropagation();
+            newFab.click();
+        }
+    });
+});
+</script>
+
+<style>
+.add-btn.fab, .theme-toggle-btn { z-index: 999999 !important; pointer-events: auto !important; }
+#add-row, #show-add-row { pointer-events: auto !important; }
+body.dark-theme .dataTables_wrapper { color: #e0e0e0; }
+body.dark-theme .dataTables_wrapper .dataTables_length label,
+body.dark-theme .dataTables_wrapper .dataTables_filter input { color: #e0e0e0; }
+</style>
 {% endblock %}
