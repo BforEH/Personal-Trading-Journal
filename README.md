@@ -28,7 +28,7 @@ Email: admin@admin.com
 Password: 12345678
 (Change immediately after first login)
 
-###Why I built this
+### Why I built this
 I wanted a journal that:
 
 Stays 100% private and offline
@@ -39,7 +39,7 @@ Handles partial closes correctly
 Looks clean and works reliably
 Doesn't have a lot of features that just distract
 
-###Contributing
+### Contributing
 Pull requests and suggestions are very welcome.
 There are still a lot of bugs inside and I work on it when I find it but this is a hobby project.
 
