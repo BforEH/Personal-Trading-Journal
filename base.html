@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}STS | Smarter Trading Systems{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='favicon.webp') }}" type="image/webp">
+
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" as="style" onload="this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap"></noscript>    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" as="style" onload="this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"></noscript>
+
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="{% if session.get('theme', 'light') == 'dark' %}dark-theme{% endif %}">
+    <div class="container">
+        <nav class="navbar" role="navigation" aria-label="Main navigation">
+            <div class="navbar-top">
+                <a href="{{ url_for('index') }}" class="brand-link" aria-label="Smarter Trading Systems Home">
+                    <img src="{{ url_for('static', filename='logo.webp') }}" alt="STS Logo" class="logo" loading="lazy"> 
+                    <span class="site-name" aria-hidden="true">
+                        <span>Smarter</span>
+                        <span>Trading</span>
+                        <span>Systems</span>
+                    </span>
+                </a>
+
+                <div class="mobile-buttons">
+
+                    <button class="theme-toggle-btn" id="mobile-theme-toggle" aria-label="Toggle theme" title="Toggle light/dark mode">
+                        <span class="theme-icon" aria-hidden="true">🌙</span>
+                    </button>
+                    <button class="navbar-toggle" id="navbar-toggle" aria-label="Toggle navigation menu" aria-expanded="false">
+                        <i class="fas fa-bars" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <hr class="navbar-divider" aria-hidden="true">
+            <div class="header-row">
+                <button class="theme-toggle-btn" id="desktop-theme-toggle" aria-label="Toggle theme" title="Toggle light/dark mode">
+                    <span class="theme-icon" aria-hidden="true">🌙</span>
+                </button>
+            </div>
+
+            <div class="nav-links" id="nav-links" role="menubar">
+                {% macro nav_link(icon, text, endpoint) %}
+                    <a href="{{ url_for(endpoint) }}" 
+                       class="nav-item{% if request.endpoint == endpoint %} active{% endif %}" 
+                       role="menuitem"
+                       aria-current="{% if request.endpoint == endpoint %}page{% else %}false{% endif %}">
+                        <img src="{{ url_for('static', filename=icon) }}" 
+                             alt="{{ text }}" 
+                             class="nav-icon" 
+                             loading="lazy" 
+                             width="24" height="24">
+                        <span class="nav-text">{{ text }}</span>
+                    </a>
+                {% endmacro %}
+
+                {{ nav_link('home.webp', 'Home', 'index') }}
+                {{ nav_link('journal.webp', 'Journal', 'journal') }}
+                {{ nav_link('analysis.webp', 'Analytics', 'analytics') }}
+                {{ nav_link('rules.webp', 'Rules', 'rules') }}
+                {{ nav_link('todo.webp', 'To Do', 'todo') }}
+                {{ nav_link('notes.webp', 'Notes', 'notes') }}
+                {{ nav_link('gallery.webp', 'Gallery', 'gallery') }}
+                {{ nav_link('knowledge.webp', 'Knowledge', 'knowledge') }}
+                {{ nav_link('settings.webp', 'Settings', 'settings') }}
+            </div>
+            <hr class="navbar-divider-user" aria-hidden="true">
+            {% if session.logged_in %}
+            <div class="nav-user" role="group" aria-label="User account">
+                <span class="user-icon" aria-hidden="true">👤</span> 
+                <div class="user-info">
+                    <span class="username">{{ session.username }}</span>
+                    <a href="{{ url_for('logout') }}" class="logout-btn" rel="nofollow noopener">
+                        <i class="fas fa-sign-out-alt" aria-hidden="true"></i> Logout
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </nav>
+
+        <main class="main-content" id="main-content">
+
+        <div class="flash-messages-wrapper" aria-live="polite">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="flash-message {{ category }} show">
+                            <span class="flash-icon">
+                                {% if category == 'success' %}✓ Success{% endif %}
+                                {% if category == 'error' %}✗ Error{% endif %}
+                                {% if category == 'warning' %}⚠ Warning{% endif %}
+                                {% if category == 'info' %}ℹ Info{% endif %}
+                            </span>
+                            {{ message }}
+                            <button class="flash-close" onclick="this.parentElement.remove()" aria-label="Close">×</button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+    {% block floating_button %}{% endblock %}
+    <form id="theme-toggle-form" method="post" action="{{ url_for('toggle_theme') }}" style="display: none;">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+    </form>
+
+    {% block extra_scripts %}
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const navbar = document.querySelector('.navbar');
+        const toggleBtn = document.getElementById('navbar-toggle');
+        const navLinks = document.querySelectorAll('.nav-links a');
+        const themeToggles = document.querySelectorAll('.theme-toggle-btn');
+        const themeForm = document.getElementById('theme-toggle-form');
+        const body = document.body;
+        let isDark = body.classList.contains('dark-theme');
+
+        function updateThemeIcons() {
+            document.querySelectorAll('.theme-icon').forEach(icon => {
+                icon.textContent = isDark ? '☀️' : '🌙';
+            });
+        }
+        updateThemeIcons();
+
+        themeToggles.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                body.classList.toggle('dark-theme');
+                isDark = body.classList.contains('dark-theme');
+                updateThemeIcons();
+                themeForm.submit(); 
+            });
+        });
+
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const expanded = navbar.classList.toggle('expanded');
+                toggleBtn.setAttribute('aria-expanded', expanded);
+                const icon = toggleBtn.querySelector('i');
+                icon.classList.toggle('fa-bars');
+                icon.classList.toggle('fa-times');
+            });
+        }
+
+        document.addEventListener('click', (e) => {
+            if (navbar.classList.contains('expanded') && !navbar.contains(e.target)) {
+                navbar.classList.remove('expanded');
+                toggleBtn.setAttribute('aria-expanded', 'false');
+                toggleBtn.querySelector('i').classList.add('fa-bars');
+                toggleBtn.querySelector('i').classList.remove('fa-times');
+            }
+        });
+
+        navLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                navbar.classList.remove('expanded');
+                toggleBtn.setAttribute('aria-expanded', 'false');
+                toggleBtn.querySelector('i').classList.add('fa-bars');
+                toggleBtn.querySelector('i').classList.remove('fa-times');
+            });
+        });
+
+        let touchStartX = 0;
+        navbar.addEventListener('touchstart', (e) => touchStartX = e.touches[0].clientX);
+        navbar.addEventListener('touchend', (e) => {
+            const touchEndX = e.changedTouches[0].clientX;
+            if (touchStartX - touchEndX > 50) navbar.classList.remove('expanded');
+        });
+
+        let lastScrollTop = 0;
+        window.addEventListener('scroll', () => {
+            if (window.innerWidth <= 768) {
+                const st = window.pageYOffset || document.documentElement.scrollTop;
+                navbar.style.transform = (st > lastScrollTop && st > 60) ? 'translateY(-100%)' : 'translateY(0)';
+                lastScrollTop = st;
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && navbar.classList.contains('expanded')) {
+                navbar.classList.remove('expanded');
+                toggleBtn.setAttribute('aria-expanded', 'false');
+                toggleBtn.querySelector('i').classList.add('fa-bars');
+                toggleBtn.querySelector('i').classList.remove('fa-times');
+            }
+        });
+    });
+    </script>
+    {% endblock %}
+</body>
+</html>
