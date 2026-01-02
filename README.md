@@ -16,7 +16,6 @@ Designed for traders who want to keep a structured, private, and detailed record
 
 ### Quick Start
 
-```bash
 git clone https://github.com/yourusername/sts-trading-journal.git
 cd sts-trading-journal
 pip install -r requirements.txt
