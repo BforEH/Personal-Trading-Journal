@@ -8,6 +8,11 @@ Designed for traders who want to keep a structured, private, and detailed record
 Journalling per trade, including reason of the trade and feedback. This is complemented with a image of TA which can be enlarged. On the right side the trade details from the index page are visible. 
 <img width="1902" height="915" alt="image" src="https://github.com/user-attachments/assets/03166edf-5c74-4794-94e4-068adcb641e4" />
 
+Trades automatically getting inserted into calendar with win or loss per day. 
+<img width="1918" height="915" alt="image" src="https://github.com/user-attachments/assets/d373b0a4-d908-4f6e-9e09-627e8d2c08b5" />
+Per day, week or month a journal can be created with week and month journals synced to all connected days. 
+<img width="1918" height="916" alt="image" src="https://github.com/user-attachments/assets/4fb3e300-69b4-4c23-b1fd-c6932d49342b" />
+
 
 
 - Full trade logging with support for partial closes and parent/child trade relationships
