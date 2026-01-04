@@ -3,6 +3,8 @@ A clean, fast, self-hosted trading journal built with Flask.
 
 Designed for traders who want to keep a structured, private, and detailed record of their trades, thoughts, and progress — without subscriptions or third-party cloud services.
 <img width="1919" height="912" alt="Screenshot 2026-01-02 155417" src="https://github.com/user-attachments/assets/8dde95c7-8efe-4daf-9e9b-1610a513785c" />
+<img width="1918" height="914" alt="image" src="https://github.com/user-attachments/assets/28e22060-6c53-402e-83b4-6f0af53511e8" />
+
 Journalling per trade, including reason of the trade and feedback. This is complemented with a image of TA which can be enlarged. On the right side the trade details from the index page are visible. 
 <img width="1902" height="915" alt="image" src="https://github.com/user-attachments/assets/03166edf-5c74-4794-94e4-068adcb641e4" />
 
