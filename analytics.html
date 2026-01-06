@@ -1,0 +1,242 @@
+{% extends "base.html" %}
+{% block extra_head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='analytics.css') }}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+{% endblock %}
+
+{% block title %}Analytics - STS{% endblock %} 
+{% block content %}
+    <h1>Analytics</h1>
+    <hr class="title-divider">
+
+    <form method="get" id="period-form" style="margin-bottom: 24px;">
+        <div class="period-selector">
+        <label for="period"><i class="fa-solid fa-calendar"></i> Period</label>
+        <select name="period" id="period" onchange="document.getElementById('period-form').submit()">
+            <option value="monthly" {% if period == 'monthly' %}selected{% endif %}>Monthly</option>
+            <option value="last_month" {% if period == 'last_month' %}selected{% endif %}>Last Month</option>
+            <option value="yearly" {% if period == 'yearly' %}selected{% endif %}>Yearly</option>
+            <option value="all" {% if period == 'all' %}selected{% endif %}>All</option>
+        </select>
+    </div>
+    </form>
+
+        <div class="analytics-container">
+            <div class="metrics-row">
+
+        <div class="metric-card dark">
+            <div class="metric-icon blue-bg">
+                <i class="fa-solid fa-arrows-up-down"></i>
+            </div>
+            <div>
+                <div class="metric-title">Total Trades</div>
+                <div class="metric-main">{{ analytics_data.total_trades }}</div>
+                <div class="metric-sub">
+                    <span class="win-count">{{ analytics_data.win_count }} W</span>
+                    <span class="loss-count">{{ analytics_data.loss_count }} L</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="metric-card dark">
+            <div class="metric-icon blue-bg">
+                <i class="fa-solid fa-trophy"></i>
+            </div>
+            <div>
+                <div class="metric-title">Win Rate</div>
+                <div class="metric-main">{{ "%.1f"|format(analytics_data.win_rate) }}%</div>
+                <div class="metric-sub">
+                    <span class="win-count">{{ analytics_data.win_count }}W</span>
+                    <span class="loss-count">{{ analytics_data.loss_count }}L</span>
+                </div>
+                <div class="metric-breakeven">
+                    {{ analytics_data.breakeven_count }} Breakeven
+                </div>
+            </div>
+        </div>
+
+        <div class="metric-card dark">
+            <div class="metric-icon blue-bg">
+                <i class="fa-solid fa-clock"></i>
+            </div>
+            <div>
+                <div class="metric-title">Avg Trade Duration</div>
+                <div class="metric-main">{{ "%.1f"|format(analytics_data.avg_trade_duration) }} days</div>
+            </div>
+        </div>
+
+        <!-- Long/Short Ratio Card -->
+        <div class="metric-card dark" style="flex-direction: column; align-items: flex-start;">
+            <div style="width: 100%;">
+                <div class="ratio-bar">
+                    <span class="long-ratio" style="color: #2ecc40;">{{ "%.1f"|format(analytics_data.long_ratio) }}% ({{ analytics_data.long_count }}) L</span>
+                    <span class="short-ratio" style="color: #ff4136;">{{ "%.1f"|format(analytics_data.short_ratio) }}% ({{ analytics_data.short_count }}) S</span>
+                </div>
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill long" style="width: {{ analytics_data.long_ratio }}%;"></div>
+                    <div class="progress-bar-fill short" style="width: {{ analytics_data.short_ratio }}%;"></div>
+                </div>
+            </div>
+        </div>
+    <div class="metric-card dark">
+    <div class="metric-icon blue-bg">
+        <i class="fa-solid fa-scale-balanced"></i>
+    </div>
+    <div>
+        <div class="metric-title">Total RR</div>
+        <div class="metric-main">{{ "%.2f"|format(analytics_data.total_rr) }}</div>
+    </div>
+</div>
+
+
+
+
+
+
+</div>
+ <div class="stats-panel general-summary">
+        <div class="stats-title">Overall Summary</div>
+        
+        
+        <div class="stats-row">
+            <span class="label">Average RR</span>
+            <span class="value">{{ "%.2f"|format(analytics_data.average_rr) }}</span>
+        </div>
+        <div class="stats-row">
+            <span class="label">Median RR</span>
+            <span class="value">{{ analytics_data.median_rr }}</span>
+        </div>
+        <div class="stats-row">
+            <span class="label">Most Used Symbol</span>
+            <span class="value">{{ analytics_data.most_used_ticker }}</span>
+        </div>
+        <!-- Add more general stats as needed -->
+    </div>
+<div class="stats-panel">
+    <div class="stats-title">Statistics</div>
+    <div class="stats-columns">
+        <!-- Left column: HTF -->
+        <div class="stats-col">
+            <div class="stats-type-title">HTF</div>
+            <div class="stats-row"><span class="label">Trades</span><span class="value">{{ analytics_data.trades_per_type.HTF }}</span></div>
+            <div class="stats-row"><span class="label">Win Rate</span><span class="value">{{ "%.1f"|format(analytics_data.type_stats.HTF.win_rate) }}%</span></div>
+            <div class="stats-row"><span class="label">Long/Short</span>
+                <span class="value">
+                    {{ analytics_data.long_short_per_type.HTF.long_count }} |
+                    {{ analytics_data.long_short_per_type.HTF.short_count }}
+                </span>
+            </div>
+            <div class="stats-row"><span class="label">Total RR</span><span class="value">{{ analytics_data.total_rr_per_type.HTF|round(2) }}</span></div>
+      
+        </div>
+        <!-- Right column: MTF -->
+        <div class="stats-col">
+            <div class="stats-type-title">MTF</div>
+            <div class="stats-row"><span class="label">Trades</span><span class="value">{{ analytics_data.trades_per_type.MTF }}</span></div>
+            <div class="stats-row"><span class="label">Win Rate</span><span class="value">{{ "%.1f"|format(analytics_data.type_stats.MTF.win_rate) }}%</span></div>
+            <div class="stats-row"><span class="label">Long/Short</span>
+                <span class="value">
+                    {{ analytics_data.long_short_per_type.MTF.long_count }} |
+                    {{ analytics_data.long_short_per_type.MTF.short_count }}
+                </span>
+            </div>
+            <div class="stats-row"><span class="label">Total RR</span><span class="value">{{ analytics_data.total_rr_per_type.MTF|round(2) }}</span></div>
+
+        </div>
+        <!-- Optionally, add LTF as a third column or below -->
+        <div class="stats-col">
+            <div class="stats-type-title">LTF</div>
+            <div class="stats-row"><span class="label">Trades</span><span class="value">{{ analytics_data.trades_per_type.LTF }}</span></div>
+            <div class="stats-row"><span class="label">Win Rate</span><span class="value">{{ "%.1f"|format(analytics_data.type_stats.LTF.win_rate) }}%</span></div>
+            <div class="stats-row"><span class="label">Long/Short</span>
+                <span class="value">
+                    {{ analytics_data.long_short_per_type.LTF.long_count }} |
+                    {{ analytics_data.long_short_per_type.LTF.short_count }}
+                </span>
+            </div>
+            <div class="stats-row"><span class="label">Total RR</span><span class="value">{{ analytics_data.total_rr_per_type.LTF|round(2) }}</span></div>
+
+        </div>
+    </div>
+</div>
+
+<div class="stats-panel" style="margin-top: 32px;">
+    <div class="stats-title">
+        RR over {{ "Days" if period == "monthly" else "Months" if period == "yearly" else "Trades" }}
+    </div>
+    <canvas id="rrChart" height="80"></canvas>
+</div>
+
+
+
+
+
+{% endblock %}
+{% block extra_scripts %}<script src="{{ url_for('static', filename='analytics.js') }}"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+    const toggleBtn = document.querySelector('.navbar-toggle');
+    const navbar = document.querySelector('.navbar');
+    
+    if (toggleBtn && navbar) {
+        toggleBtn.onclick = function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            navbar.classList.toggle('expanded');
+            console.log('Navbar toggled, expanded:', navbar.classList.contains('expanded'));
+        };
+        
+        // Close when clicking outside
+        document.onclick = function(e) {
+            if (!navbar.contains(e.target) && navbar.classList.contains('expanded')) {
+                navbar.classList.remove('expanded');
+            }
+        };
+    } else {
+        console.log('Toggle button or navbar not found');
+    }
+});
+    document.addEventListener("DOMContentLoaded", function() {
+        const ctx = document.getElementById('rrChart').getContext('2d');
+        const rrData = {{ analytics_data.rr_values|tojson }};
+        const rrLabels = {{ analytics_data.rr_labels|tojson }};
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: rrLabels,
+                datasets: [{
+                    label: 'RR',
+                    data: rrData,
+                    borderColor: '#0074D9',
+                    backgroundColor: 'rgba(0, 116, 217, 0.1)',
+                    fill: true,
+                    tension: 0.2,
+                    pointRadius: 3,
+                    pointBackgroundColor: '#0074D9'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false },
+                    title: { display: false }
+                },
+                scales: {
+                    x: {
+                        title: { display: true, text: '{{ "Day" if period == "monthly" else "Month" if period == "yearly" else "Trade" }}' },
+                        ticks: {
+                            callback: function(value, index, ticks) {
+                                if (typeof value === 'string' && value.length === 10 && value[4] === '-' && value[7] === '-') {
+                                    return value.slice(5); 
+                                }
+                                return value; 
+                            }
+                        }
+                    },
+                    y: { title: { display: true, text: 'RR' } }
+                }
+            
+            }
+        });
+    });</script>{% endblock %}
