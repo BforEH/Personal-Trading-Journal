@@ -12,6 +12,9 @@ Trades automatically getting inserted into calendar with win or loss per day.
 <img width="1918" height="915" alt="image" src="https://github.com/user-attachments/assets/d373b0a4-d908-4f6e-9e09-627e8d2c08b5" />
 Per day, week or month a journal can be created with week and month journals synced to all connected days. 
 <img width="1918" height="916" alt="image" src="https://github.com/user-attachments/assets/4fb3e300-69b4-4c23-b1fd-c6932d49342b" />
+Analytics page to see the statitics of your executed trades
+<img width="1918" height="912" alt="image" src="https://github.com/user-attachments/assets/83c49243-f782-421c-ba2f-3b68a9aaebef" />
+
 
 
 
